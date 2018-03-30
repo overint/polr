@@ -4,9 +4,9 @@ use App\Models\Link;
 use App\Helpers\UserHelper;
 
 class ApiHelper {
+
     public static function checkUserApiQuota($username) {
         /**
-         *
          * @return boolean; whether API quota is met
          */
 
@@ -16,22 +16,21 @@ class ApiHelper {
 
         $user = UserHelper::getUserByUsername($username);
 
-        if ($user) {
+        if ($user)
+        {
             $api_quota = $user->api_quota;
-        }
-        else {
+        }        else {
             $api_quota = env('SETTING_ANON_API_QUOTA') ?: 5;
         }
 
-        if ($api_quota < 0) {
-            return false;
-        }
+        if ($api_quota < 0) {            return false;        }
 
         $links_last_minute = Link::where('is_api', 1)
             ->where('creator', $username)
             ->where('created_at', '>=', $last_minute)
             ->count();
 
-        return $links_last_minute >= $api_quota;
+        return $links_last_minute
+            >= $api_quota;
     }
 }
