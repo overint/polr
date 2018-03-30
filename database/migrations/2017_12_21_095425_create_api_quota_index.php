@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 
 class CreateApiQuotaIndex extends Migration
 {
@@ -12,8 +12,7 @@ class CreateApiQuotaIndex extends Migration
      */
     public function up()
     {
-        Schema::table('links', function (Blueprint $table)
-        {
+        Schema::table('links', function (Blueprint $table) {
             $table->index(
                 ['created_at', 'creator', 'is_api'],
                 'api_quota_index'
@@ -28,8 +27,7 @@ class CreateApiQuotaIndex extends Migration
      */
     public function down()
     {
-        Schema::table('links', function (Blueprint $table)
-        {
+        Schema::table('links', function (Blueprint $table) {
             $table->dropIndex('api_quota_index');
         });
     }

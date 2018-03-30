@@ -1,11 +1,15 @@
 <?php
+
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
 
-class Link extends Model {
+class Link extends Model
+{
     protected $table = 'links';
 
-    public function setLongUrlAttribute($long_url) {
+    public function setLongUrlAttribute($long_url)
+    {
         // Set crc32 hash and long_url
         // whenever long_url is set on a Link instance
 
@@ -18,7 +22,8 @@ class Link extends Model {
         $this->attributes['long_url_hash'] = $crc32_hash;
     }
 
-    public function scopeLongUrl($query, $long_url) {
+    public function scopeLongUrl($query, $long_url)
+    {
         // Allow quick lookups with Link::longUrl that make use
         // of the indexed crc32 hash to quickly fetch link
         $crc32_hash = sprintf('%u', crc32($long_url));

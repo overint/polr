@@ -103,7 +103,7 @@ return [
     */
 
     'attributes' => [
-        'link-url' => 'link URL'
+        'link-url' => 'link URL',
     ],
 
 ];

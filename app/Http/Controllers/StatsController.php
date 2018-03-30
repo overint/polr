@@ -1,21 +1,22 @@
 <?php
+
 namespace App\Http\Controllers;
-use Illuminate\Http\Request;
-use Illuminate\Http\Redirect;
-use Carbon\Carbon;
 
-use App\Models\Link;
-use App\Models\Clicks;
 use App\Helpers\StatsHelper;
-use Illuminate\Support\Facades\DB;
+use App\Models\Link;
+use Carbon\Carbon;
+use Illuminate\Http\Redirect;
+use Illuminate\Http\Request;
 
-class StatsController extends Controller {
+class StatsController extends Controller
+{
     const DAYS_TO_FETCH = 30;
 
-    public function displayStats(Request $request, $short_url) {
+    public function displayStats(Request $request, $short_url)
+    {
         $validator = \Validator::make($request->all(), [
-            'left_bound' => 'date',
-            'right_bound' => 'date'
+            'left_bound'  => 'date',
+            'right_bound' => 'date',
         ]);
 
         if ($validator->fails() && !session('error')) {
@@ -53,15 +54,14 @@ class StatsController extends Controller {
 
         $link_id = $link->id;
 
-        if ( (session('username') != $link->creator) && !self::currIsAdmin() ) {
+        if ((session('username') != $link->creator) && !self::currIsAdmin()) {
             return redirect(route('admin'))->with('error', 'You do not have permission to view stats for this link.');
         }
 
         try {
             // Initialize StatHelper
             $stats = new StatsHelper($link_id, $left_bound, $right_bound);
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             if (!session('error')) {
                 // Do not flash error if there is already an error flashed
                 return redirect()->back()->with('error', 'Invalid date bounds.
@@ -74,15 +74,15 @@ class StatsController extends Controller {
         $referer_stats = $stats->getRefererStats();
 
         return view('link_stats', [
-            'link' => $link,
-            'day_stats' => $day_stats,
+            'link'          => $link,
+            'day_stats'     => $day_stats,
             'country_stats' => $country_stats,
             'referer_stats' => $referer_stats,
 
-            'left_bound' => ($user_left_bound ?: $left_bound->toDateTimeString()),
+            'left_bound'  => ($user_left_bound ?: $left_bound->toDateTimeString()),
             'right_bound' => ($user_right_bound ?: $right_bound->toDateTimeString()),
 
-            'no_div_padding' => true
+            'no_div_padding' => true,
         ]);
     }
 }

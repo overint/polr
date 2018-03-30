@@ -1,36 +1,38 @@
 <?php
+
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Helpers\LinkHelper;
+use App\Factories\UserFactory;
 use App\Helpers\CryptoHelper;
+use App\Helpers\LinkHelper;
 use App\Helpers\UserHelper;
 use App\Models\User;
-use App\Factories\UserFactory;
+use Illuminate\Http\Request;
 
-class AjaxController extends Controller {
+class AjaxController extends Controller
+{
     /**
      * Process AJAX requests.
      *
      * @return Response
      */
-    public function checkLinkAvailability(Request $request) {
+    public function checkLinkAvailability(Request $request)
+    {
         $link_ending = $request->input('link_ending');
         $ending_conforms = LinkHelper::validateEnding($link_ending);
 
         if (!$ending_conforms) {
-            return "invalid";
-        }
-        else if (LinkHelper::linkExists($link_ending)) {
+            return 'invalid';
+        } elseif (LinkHelper::linkExists($link_ending)) {
             // if ending already exists
-            return "unavailable";
-        }
-        else {
-            return "available";
+            return 'unavailable';
+        } else {
+            return 'available';
         }
     }
 
-    public function toggleAPIActive(Request $request) {
+    public function toggleAPIActive(Request $request)
+    {
         self::ensureAdmin();
 
         $user_id = $request->input('user_id');
@@ -43,8 +45,7 @@ class AjaxController extends Controller {
 
         if ($current_status == 1) {
             $new_status = 0;
-        }
-        else {
+        } else {
             $new_status = 1;
         }
 
@@ -54,16 +55,16 @@ class AjaxController extends Controller {
         return $user->api_active;
     }
 
-    public function generateNewAPIKey(Request $request) {
+    public function generateNewAPIKey(Request $request)
+    {
         /**
-         * If user is an admin, allow resetting of any API key
+         * If user is an admin, allow resetting of any API key.
          *
          * If user is not an admin, allow resetting of own key only, and only if
          * API is enabled for the account.
+         *
          * @return string; new API key
          */
-
-
         $user_id = $request->input('user_id');
         $user = UserHelper::getUserById($user_id);
 
@@ -78,8 +79,7 @@ class AjaxController extends Controller {
             // if user is attempting to reset another user's API key,
             // ensure they are an admin
             self::ensureAdmin();
-        }
-        else {
+        } else {
             // user is attempting to reset own key
             // ensure that user is permitted to access the API
             $user_api_enabled = $user->api_active;
@@ -97,8 +97,9 @@ class AjaxController extends Controller {
         return $user->api_key;
     }
 
-    public function editAPIQuota(Request $request) {
-        /**
+    public function editAPIQuota(Request $request)
+    {
+        /*
          * If user is an admin, allow the user to edit the per minute API quota of
          * any user.
          */
@@ -114,10 +115,12 @@ class AjaxController extends Controller {
         }
         $user->api_quota = $new_quota;
         $user->save();
-        return "OK";
+
+        return 'OK';
     }
 
-    public function toggleUserActive(Request $request) {
+    public function toggleUserActive(Request $request)
+    {
         self::ensureAdmin();
 
         $user_id = $request->input('user_id');
@@ -130,8 +133,7 @@ class AjaxController extends Controller {
 
         if ($current_status == 1) {
             $new_status = 0;
-        }
-        else {
+        } else {
             $new_status = 1;
         }
 
@@ -141,7 +143,8 @@ class AjaxController extends Controller {
         return $user->active;
     }
 
-    public function changeUserRole(Request $request) {
+    public function changeUserRole(Request $request)
+    {
         self::ensureAdmin();
 
         $user_id = $request->input('user_id');
@@ -155,10 +158,11 @@ class AjaxController extends Controller {
         $user->role = $role;
         $user->save();
 
-        return "OK";
+        return 'OK';
     }
 
-    public function addNewUser(Request $request) {
+    public function addNewUser(Request $request)
+    {
         self::ensureAdmin();
 
         $ip = $request->ip();
@@ -169,10 +173,11 @@ class AjaxController extends Controller {
 
         UserFactory::createUser($username, $user_email, $user_password, 1, $ip, false, 0, $user_role);
 
-        return "OK";
+        return 'OK';
     }
 
-    public function deleteUser(Request $request) {
+    public function deleteUser(Request $request)
+    {
         self::ensureAdmin();
 
         $user_id = $request->input('user_id');
@@ -183,10 +188,12 @@ class AjaxController extends Controller {
         }
 
         $user->delete();
-        return "OK";
+
+        return 'OK';
     }
 
-    public function deleteLink(Request $request) {
+    public function deleteLink(Request $request)
+    {
         self::ensureAdmin();
 
         $link_ending = $request->input('link_ending');
@@ -197,10 +204,12 @@ class AjaxController extends Controller {
         }
 
         $link->delete();
-        return "OK";
+
+        return 'OK';
     }
 
-    public function toggleLink(Request $request) {
+    public function toggleLink(Request $request)
+    {
         self::ensureAdmin();
 
         $link_ending = $request->input('link_ending');
@@ -223,15 +232,15 @@ class AjaxController extends Controller {
 
         $link->save();
 
-        return ($new_status ? "Enable" : "Disable");
+        return $new_status ? 'Enable' : 'Disable';
     }
 
-    public function editLinkLongUrl(Request $request) {
+    public function editLinkLongUrl(Request $request)
+    {
         /**
          * If user is an admin, allow the user to edit the value of any link's long URL.
          * Otherwise, only allow the user to edit their own links.
          */
-
         $link_ending = $request->input('link_ending');
         $link = LinkHelper::linkExists($link_ending);
 
@@ -251,6 +260,7 @@ class AjaxController extends Controller {
 
         $link->long_url = $new_long_url;
         $link->save();
-        return "OK";
+
+        return 'OK';
     }
 }

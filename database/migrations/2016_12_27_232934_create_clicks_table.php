@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class CreateClicksTable extends Migration
 {
@@ -13,8 +13,7 @@ class CreateClicksTable extends Migration
      */
     public function up()
     {
-        Schema::create('clicks', function(Blueprint $table)
-        {
+        Schema::create('clicks', function (Blueprint $table) {
             $table->engine = 'InnoDB';
 
             $table->increments('id');
@@ -33,6 +32,7 @@ class CreateClicksTable extends Migration
             $table->timestamps();
         });
     }
+
     /**
      * Reverse the migrations.
      *

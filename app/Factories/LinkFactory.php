@@ -1,33 +1,38 @@
 <?php
+
 namespace App\Factories;
 
-use App\Models\Link;
 use App\Helpers\CryptoHelper;
 use App\Helpers\LinkHelper;
+use App\Models\Link;
 
-
-class LinkFactory {
+class LinkFactory
+{
     const MAXIMUM_LINK_LENGTH = 65535;
 
-    private static function formatLink($link_ending, $secret_ending=false) {
+    private static function formatLink($link_ending, $secret_ending = false)
+    {
         /**
-        * Given a link ending and a boolean indicating whether a secret ending is needed,
-        * return a link formatted with app protocol, app address, and link ending.
-        * @param string $link_ending
-        * @param boolean $secret_ending
-        * @return string
-        */
-        $short_url = env('APP_PROTOCOL') . env('APP_ADDRESS') . '/' . $link_ending;
+         * Given a link ending and a boolean indicating whether a secret ending is needed,
+         * return a link formatted with app protocol, app address, and link ending.
+         *
+         * @param string $link_ending
+         * @param bool   $secret_ending
+         *
+         * @return string
+         */
+        $short_url = env('APP_PROTOCOL').env('APP_ADDRESS').'/'.$link_ending;
 
         if ($secret_ending) {
-            $short_url .= '/' . $secret_ending;
+            $short_url .= '/'.$secret_ending;
         }
 
         return $short_url;
     }
 
-    public static function createLink($long_url, $is_secret=false, $custom_ending=null, $link_ip='127.0.0.1', $creator=false, $return_object=false, $is_api=false) {
-        /**
+    public static function createLink($long_url, $is_secret = false, $custom_ending = null, $link_ip = '127.0.0.1', $creator = false, $return_object = false, $is_api = false)
+    {
+        /*
         * Given parameters needed to create a link, generate appropriate ending and
         * return formatted link.
         *
@@ -59,6 +64,7 @@ class LinkFactory {
             // if link is not specified as secret, is non-custom, and
             // already exists in Polr, lookup the value and return
             $existing_link = LinkHelper::longLinkExists($long_url, $creator);
+
             return self::formatLink($existing_link);
         }
 
@@ -76,25 +82,23 @@ class LinkFactory {
             }
 
             $link_ending = $custom_ending;
-        }
-        else {
+        } else {
             if (env('SETTING_PSEUDORANDOM_ENDING')) {
                 // generate a pseudorandom ending
                 $link_ending = LinkHelper::findPseudoRandomEnding();
-            }
-            else {
+            } else {
                 // generate a counter-based ending or use existing ending if possible
                 $link_ending = LinkHelper::findSuitableEnding();
             }
         }
 
-        $link = new Link;
+        $link = new Link();
         $link->short_url = $link_ending;
-        $link->long_url  = $long_url;
-        $link->ip        = $link_ip;
+        $link->long_url = $long_url;
+        $link->ip = $link_ip;
         $link->is_custom = $custom_ending != null;
 
-        $link->is_api    = $is_api;
+        $link->is_api = $is_api;
 
         if ($creator) {
             // if user is logged in, save user as creator
@@ -105,8 +109,7 @@ class LinkFactory {
             $rand_bytes_num = intval(env('POLR_SECRET_BYTES'));
             $secret_key = CryptoHelper::generateRandomHex($rand_bytes_num);
             $link->secret_key = $secret_key;
-        }
-        else {
+        } else {
             $secret_key = false;
         }
 
@@ -120,5 +123,4 @@ class LinkFactory {
 
         return $formatted_link;
     }
-
 }

@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 
 class AlterLinkClicksToInteger extends Migration
 {
@@ -14,8 +14,7 @@ class AlterLinkClicksToInteger extends Migration
      */
     public function up()
     {
-        Schema::table('links', function (Blueprint $table)
-        {
+        Schema::table('links', function (Blueprint $table) {
             $table->integer('clicks')->change();
         });
     }
@@ -27,8 +26,7 @@ class AlterLinkClicksToInteger extends Migration
      */
     public function down()
     {
-        Schema::table('links', function (Blueprint $table)
-        {
+        Schema::table('links', function (Blueprint $table) {
             $table->string('clicks')->change();
         });
     }

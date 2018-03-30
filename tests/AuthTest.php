@@ -3,11 +3,12 @@
 class AuthTest extends TestCase
 {
     /**
-     * Test Authentication (sign up and sign in)
+     * Test Authentication (sign up and sign in).
      *
      * @return void
      */
-    public function testLogin() {
+    public function testLogin()
+    {
         // $this->visit('/')
         //      ->type('polrci', 'username')
         //      ->type('polrci', 'password ')
