@@ -1,14 +1,17 @@
 <?php
+
 namespace App\Http\Controllers\Api;
+
+use App\Exceptions\Api\ApiException;
+use App\Helpers\LinkHelper;
+use App\Helpers\StatsHelper;
+use App\Helpers\UserHelper;
 use Illuminate\Http\Request;
 
-use App\Helpers\LinkHelper;
-use App\Helpers\UserHelper;
-use App\Helpers\StatsHelper;
-use App\Exceptions\Api\ApiException;
-
-class ApiAnalyticsController extends ApiController {
-    public function lookupLinkStats (Request $request, $stats_type=false) {
+class ApiAnalyticsController extends ApiController
+{
+    public function lookupLinkStats(Request $request, $stats_type = false)
+    {
         $user = $request->user;
         $response_type = $request->input('response_type') ?: 'json';
 
@@ -21,10 +24,10 @@ class ApiAnalyticsController extends ApiController {
         }
 
         $validator = \Validator::make($request->all(), [
-            'url_ending' => 'required|alpha_dash',
-            'stats_type' => 'alpha_num',
-            'left_bound' => 'date',
-            'right_bound' => 'date'
+            'url_ending'  => 'required|alpha_dash',
+            'stats_type'  => 'alpha_num',
+            'left_bound'  => 'date',
+            'right_bound' => 'date',
         ]);
 
         if ($validator->fails()) {
@@ -45,34 +48,30 @@ class ApiAnalyticsController extends ApiController {
         }
 
         if (($link->creator != $user->username) &&
-                !(UserHelper::userIsAdmin($user->username))){
+                !(UserHelper::userIsAdmin($user->username))) {
             // If user does not own link and is not an admin
             throw new ApiException('ACCESS_DENIED', 'Unauthorized.', 401, $response_type);
         }
 
         try {
             $stats = new StatsHelper($link->id, $left_bound, $right_bound);
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             throw new ApiException('ANALYTICS_ERROR', $e->getMessage(), 400, $response_type);
         }
 
         if ($stats_type == 'day') {
             $fetched_stats = $stats->getDayStats();
-        }
-        else if ($stats_type == 'country') {
+        } elseif ($stats_type == 'country') {
             $fetched_stats = $stats->getCountryStats();
-        }
-        else if ($stats_type == 'referer') {
+        } elseif ($stats_type == 'referer') {
             $fetched_stats = $stats->getRefererStats();
-        }
-        else {
+        } else {
             throw new ApiException('INVALID_ANALYTICS_TYPE', 'Invalid analytics type requested.', 400, $response_type);
         }
 
         return self::encodeResponse([
             'url_ending' => $link->short_url,
-            'data' => $fetched_stats,
-        ], 'data_link_' . $stats_type, $response_type, false);
+            'data'       => $fetched_stats,
+        ], 'data_link_'.$stats_type, $response_type, false);
     }
 }

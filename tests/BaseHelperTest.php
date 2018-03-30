@@ -1,15 +1,16 @@
 <?php
+
 use App\Helpers\BaseHelper;
 
 class BaseHelperTest extends TestCase
 {
     /**
-     * Test BaseHelper
+     * Test BaseHelper.
      *
      * @return void
      */
-
-    private static function checkBaseGen($num) {
+    private static function checkBaseGen($num)
+    {
         $toBase32 = BaseHelper::toBase($num, 32);
         $toBase62 = BaseHelper::toBase($num, 62);
 
@@ -19,21 +20,23 @@ class BaseHelperTest extends TestCase
         if ($fromBase62 == $num && $fromBase32 == $num) {
             return true;
         }
+
         return false;
     }
-    public function testLogin() {
+
+    public function testLogin()
+    {
         $nums = [
             523002,
             1204,
             23,
             0,
             1,
-            45
+            45,
         ];
 
         foreach ($nums as $n) {
             $this->assertEquals(true, self::checkBaseGen($n));
         }
-
     }
 }

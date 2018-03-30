@@ -1,15 +1,16 @@
 <?php
-namespace App\Helpers;
-use App\Models\Link;
-use App\Helpers\UserHelper;
 
-class ApiHelper {
-    public static function checkUserApiQuota($username) {
+namespace App\Helpers;
+
+use App\Models\Link;
+
+class ApiHelper
+{
+    public static function checkUserApiQuota($username)
+    {
         /**
-         *
          * @return boolean; whether API quota is met
          */
-
         $last_minute_unix = time() - 60;
         $last_minute = new \DateTime();
         $last_minute->setTimestamp($last_minute_unix);
@@ -18,8 +19,7 @@ class ApiHelper {
 
         if ($user) {
             $api_quota = $user->api_quota;
-        }
-        else {
+        } else {
             $api_quota = env('SETTING_ANON_API_QUOTA') ?: 5;
         }
 

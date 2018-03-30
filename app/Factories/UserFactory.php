@@ -1,13 +1,16 @@
 <?php
+
 namespace App\Factories;
 
-use Hash;
-use App\Models\User;
 use App\Helpers\CryptoHelper;
 use App\Helpers\UserHelper;
+use App\Models\User;
+use Hash;
 
-class UserFactory {
-    public static function createUser($username, $email, $password, $active=0, $ip='127.0.0.1', $api_key=false, $api_active=0, $role=false) {
+class UserFactory
+{
+    public static function createUser($username, $email, $password, $active = 0, $ip = '127.0.0.1', $api_key = false, $api_active = 0, $role = false)
+    {
         if (!$role) {
             $role = UserHelper::$USER_ROLES['default'];
         }
@@ -15,7 +18,7 @@ class UserFactory {
         $hashed_password = Hash::make($password);
         $recovery_key = CryptoHelper::generateRandomHex(50);
 
-        $user = new User;
+        $user = new User();
         $user->username = $username;
         $user->password = $hashed_password;
         $user->email = $email;
@@ -27,7 +30,7 @@ class UserFactory {
         $user->api_active = $api_active;
 
         $user->save();
+
         return $user;
     }
-
 }

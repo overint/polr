@@ -1,14 +1,15 @@
 <?php
-namespace App\Helpers;
-use App\Models\Click;
-use App\Models\Link;
 
+namespace App\Helpers;
+
+use App\Models\Link;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class StatsHelper {
-    function __construct($link_id, $left_bound, $right_bound) {
+class StatsHelper
+{
+    public function __construct($link_id, $left_bound, $right_bound)
+    {
         $this->link_id = $link_id;
         $this->left_bound_parsed = Carbon::parse($left_bound);
         $this->right_bound_parsed = Carbon::parse($right_bound);
@@ -26,8 +27,9 @@ class StatsHelper {
         }
     }
 
-    public function getBaseRows() {
-        /**
+    public function getBaseRows()
+    {
+        /*
         * Fetches base rows given left date bound, right date bound, and link id
         *
         * @param integer $link_id
@@ -43,7 +45,8 @@ class StatsHelper {
             ->where('created_at', '<=', $this->right_bound_parsed);
     }
 
-    public function getDayStats() {
+    public function getDayStats()
+    {
         // Return stats by day from the last 30 days
         // date => x
         // clicks => y
@@ -56,9 +59,10 @@ class StatsHelper {
         return $stats;
     }
 
-    public function getCountryStats() {
+    public function getCountryStats()
+    {
         $stats = $this->getBaseRows()
-            ->select(DB::raw("country AS label, count(*) AS clicks"))
+            ->select(DB::raw('country AS label, count(*) AS clicks'))
             ->groupBy('country')
             ->orderBy('clicks', 'desc')
             ->get();
@@ -66,7 +70,8 @@ class StatsHelper {
         return $stats;
     }
 
-    public function getRefererStats() {
+    public function getRefererStats()
+    {
         $stats = $this->getBaseRows()
             ->select(DB::raw("COALESCE(referer_host, 'Direct') as label, count(*) as clicks"))
             ->groupBy('referer_host')

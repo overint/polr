@@ -1,14 +1,18 @@
 <?php
-namespace App\Helpers;
-use App\Models\Link;
-use App\Helpers\BaseHelper;
 
-class LinkHelper {
-    static public function checkIfAlreadyShortened($long_link) {
+namespace App\Helpers;
+
+use App\Models\Link;
+
+class LinkHelper
+{
+    public static function checkIfAlreadyShortened($long_link)
+    {
         /**
          * Provided a long link (string),
          * detect whether the link belongs to an URL shortener.
-         * @return boolean
+         *
+         * @return bool
          */
         $shortener_domains = [
             'polr.me',
@@ -21,43 +25,46 @@ class LinkHelper {
             'ow.ly',
             'j.mp',
             't.co',
-            env('APP_ADDRESS')
+            env('APP_ADDRESS'),
         ];
 
         foreach ($shortener_domains as $shortener_domain) {
-            $url_segment = ('://' . $shortener_domain);
+            $url_segment = ('://'.$shortener_domain);
             if (strstr($long_link, $url_segment)) {
                 return true;
             }
         }
+
         return false;
     }
 
-    static public function linkExists($link_ending) {
+    public static function linkExists($link_ending)
+    {
         /**
          * Provided a link ending (string),
          * return the link object, or false.
+         *
          * @return Link model instance
          */
-
         $link = Link::where('short_url', $link_ending)
             ->first();
 
         if ($link != null) {
             return $link;
-        }
-        else {
+        } else {
             return false;
         }
     }
 
-    static public function longLinkExists($long_url, $username=false) {
+    public static function longLinkExists($long_url, $username = false)
+    {
         /**
          * Provided a long link (string),
          * check whether the link is in the DB.
          * If a username is provided, only search for links created by the
          * user.
-         * @return boolean
+         *
+         * @return bool
          */
         $link_base = Link::longUrl($long_url)
             ->where('is_custom', 0)
@@ -66,54 +73,56 @@ class LinkHelper {
         if (is_null($username)) {
             // Search for links without a creator only
             $link = $link_base->where('creator', '')->first();
-        }
-        else if (($username !== false)) {
+        } elseif (($username !== false)) {
             // Search for links created by $username only
             $link = $link_base->where('creator', $username)->first();
-        }
-        else {
+        } else {
             // Search for links created by any user
             $link = $link_base->first();
         }
 
         if ($link == null) {
             return false;
-        }
-        else {
+        } else {
             return $link->short_url;
         }
     }
 
-    static public function validateEnding($link_ending) {
+    public static function validateEnding($link_ending)
+    {
         $is_valid_ending = preg_match('/^[a-zA-Z0-9-_]+$/', $link_ending);
+
         return $is_valid_ending;
     }
 
-    static public function findPseudoRandomEnding() {
+    public static function findPseudoRandomEnding()
+    {
         /**
          * Return an available pseudorandom string of length _PSEUDO_RANDOM_KEY_LENGTH,
          * as defined in .env
          * Edit _PSEUDO_RANDOM_KEY_LENGTH in .env if you wish to increase the length
          * of the pseudorandom string generated.
+         *
          * @return string
          */
-
         $pr_str = '';
         $in_use = true;
 
         while ($in_use) {
             // Generate a new string until the ending is not in use
             $pr_str = str_random(env('_PSEUDO_RANDOM_KEY_LENGTH'));
-            $in_use = LinkHelper::linkExists($pr_str);
+            $in_use = self::linkExists($pr_str);
         }
 
         return $pr_str;
     }
 
-    static public function findSuitableEnding() {
+    public static function findSuitableEnding()
+    {
         /**
          * Provided an in-use link ending (string),
          * find the next available base-32/62 ending.
+         *
          * @return string
          */
         $base = env('POLR_BASE');
@@ -125,17 +134,15 @@ class LinkHelper {
         if ($link == null) {
             $base10_val = 0;
             $base_x_val = 0;
-        }
-        else {
+        } else {
             $latest_link_ending = $link->short_url;
             $base10_val = BaseHelper::toBase10($latest_link_ending, $base);
             $base10_val++;
         }
 
-
         $base_x_val = null;
 
-        while (LinkHelper::linkExists($base_x_val) || $base_x_val == null) {
+        while (self::linkExists($base_x_val) || $base_x_val == null) {
             $base_x_val = BaseHelper::toBase($base10_val, $base);
             $base10_val++;
         }

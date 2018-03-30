@@ -1,53 +1,62 @@
 <?php
+
 namespace App\Http\Controllers;
-use Illuminate\Http\Request;
+
+use App\Factories\UserFactory;
+use App\Helpers\CryptoHelper;
+use App\Helpers\UserHelper;
+use Cache;
 use Illuminate\Http\Redirect;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 
-use App\Helpers\CryptoHelper;
-use App\Models\User;
-use App\Helpers\UserHelper;
-use App\Factories\UserFactory;
-use Cache;
-
-class SetupController extends Controller {
-    protected static function parseExitCode($exitCode) {
+class SetupController extends Controller
+{
+    protected static function parseExitCode($exitCode)
+    {
         if ($exitCode == 0) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
 
-    private static function setupAlreadyRan() {
+    private static function setupAlreadyRan()
+    {
         return view('error', [
-            'message' => 'Sorry, but you have already completed the setup process.'
+            'message' => 'Sorry, but you have already completed the setup process.',
         ]);
     }
 
-    private function resetDatabase() {
+    private function resetDatabase()
+    {
         $exitCode = Artisan::call('migrate:refresh', [
             '--force' => true,
         ]);
+
         return self::parseExitCode($exitCode);
     }
 
-    private static function updateGeoIP() {
+    private static function updateGeoIP()
+    {
         // Output GeoIP database for advanced
         // analytics
         $exitCode = Artisan::call('geoip:update', []);
+
         return self::parseExitCode($exitCode);
     }
 
-    private static function createDatabase() {
+    private static function createDatabase()
+    {
         $exitCode = Artisan::call('migrate', [
             '--force' => true,
         ]);
+
         return self::parseExitCode($exitCode);
     }
 
-    public static function displaySetupPage(Request $request) {
+    public static function displaySetupPage(Request $request)
+    {
         if (env('POLR_SETUP_RAN')) {
             return self::setupAlreadyRan();
         }
@@ -55,7 +64,8 @@ class SetupController extends Controller {
         return view('setup');
     }
 
-    public static function performSetup(Request $request) {
+    public static function performSetup(Request $request)
+    {
         if (env('POLR_SETUP_RAN')) {
             return self::setupAlreadyRan();
         }
@@ -87,18 +97,15 @@ class SetupController extends Controller {
         if ($polr_registration_setting == 'no-verification') {
             $polr_acct_activation = false;
             $polr_allow_acct_creation = true;
-        }
-        else if ($polr_registration_setting == 'none') {
+        } elseif ($polr_registration_setting == 'none') {
             $polr_acct_activation = false;
             $polr_allow_acct_creation = false;
-        }
-        else if ($polr_registration_setting == 'email') {
+        } elseif ($polr_registration_setting == 'email') {
             $polr_acct_activation = true;
             $polr_allow_acct_creation = true;
-        }
-        else {
+        } else {
             return view('error', [
-                'message' => 'Invalid registration settings'
+                'message' => 'Invalid registration settings',
             ]);
         }
 
@@ -135,70 +142,69 @@ class SetupController extends Controller {
 
         if ($mail_host) {
             $mail_enabled = true;
-        }
-        else {
+        } else {
             $mail_enabled = false;
         }
 
         $compiled_configuration = view('env', [
-            'APP_KEY' => $app_key,
-            'APP_NAME' => $app_name,
-            'APP_PROTOCOL' => $app_protocol,
-            'APP_ADDRESS' => $app_address,
-            'APP_STYLESHEET' => $app_stylesheet,
+            'APP_KEY'           => $app_key,
+            'APP_NAME'          => $app_name,
+            'APP_PROTOCOL'      => $app_protocol,
+            'APP_ADDRESS'       => $app_address,
+            'APP_STYLESHEET'    => $app_stylesheet,
             'POLR_GENERATED_AT' => $date_today,
-            'POLR_SETUP_RAN' => $polr_setup_ran,
+            'POLR_SETUP_RAN'    => $polr_setup_ran,
 
-            'DB_HOST' => $db_host,
-            'DB_PORT' => $db_port,
+            'DB_HOST'     => $db_host,
+            'DB_PORT'     => $db_port,
             'DB_USERNAME' => $db_username,
             'DB_PASSWORD' => $db_password,
             'DB_DATABASE' => $db_name,
 
-            'ST_PUBLIC_INTERFACE' => $st_public_interface,
-            'POLR_ALLOW_ACCT_CREATION' => $polr_allow_acct_creation,
-            'POLR_ACCT_ACTIVATION' => $polr_acct_activation,
+            'ST_PUBLIC_INTERFACE'          => $st_public_interface,
+            'POLR_ALLOW_ACCT_CREATION'     => $polr_allow_acct_creation,
+            'POLR_ACCT_ACTIVATION'         => $polr_acct_activation,
             'POLR_ACCT_CREATION_RECAPTCHA' => $polr_acct_creation_recaptcha,
-            'ST_SHORTEN_PERMISSION' => $st_shorten_permission,
-            'ST_INDEX_REDIRECT' => $st_index_redirect,
-            'ST_REDIRECT_404' => $st_redirect_404,
-            'ST_PASSWORD_RECOV' => $st_password_recov,
-            'ST_RESTRICT_EMAIL_DOMAIN' => $st_restrict_email_domain,
-            'ST_ALLOWED_EMAIL_DOMAINS' => $st_allowed_email_domains,
-            'POLR_RECAPTCHA_SITE_KEY' => $polr_recaptcha_site_key,
-            'POLR_RECAPTCHA_SECRET' => $polr_recaptcha_secret_key,
+            'ST_SHORTEN_PERMISSION'        => $st_shorten_permission,
+            'ST_INDEX_REDIRECT'            => $st_index_redirect,
+            'ST_REDIRECT_404'              => $st_redirect_404,
+            'ST_PASSWORD_RECOV'            => $st_password_recov,
+            'ST_RESTRICT_EMAIL_DOMAIN'     => $st_restrict_email_domain,
+            'ST_ALLOWED_EMAIL_DOMAINS'     => $st_allowed_email_domains,
+            'POLR_RECAPTCHA_SITE_KEY'      => $polr_recaptcha_site_key,
+            'POLR_RECAPTCHA_SECRET'        => $polr_recaptcha_secret_key,
 
-            'MAIL_ENABLED' => $mail_enabled,
-            'MAIL_HOST' => $mail_host,
-            'MAIL_PORT' => $mail_port,
-            'MAIL_USERNAME' => $mail_username,
-            'MAIL_PASSWORD' => $mail_password,
+            'MAIL_ENABLED'      => $mail_enabled,
+            'MAIL_HOST'         => $mail_host,
+            'MAIL_PORT'         => $mail_port,
+            'MAIL_USERNAME'     => $mail_username,
+            'MAIL_PASSWORD'     => $mail_password,
             'MAIL_FROM_ADDRESS' => $mail_from,
-            'MAIL_FROM_NAME' => $mail_from_name,
+            'MAIL_FROM_NAME'    => $mail_from_name,
 
-            'ST_BASE' => $st_base,
-            'ST_AUTO_API' => $st_auto_api_key,
-            'ST_ANON_API' => $st_anon_api,
+            'ST_BASE'           => $st_base,
+            'ST_AUTO_API'       => $st_auto_api_key,
+            'ST_ANON_API'       => $st_anon_api,
             'ST_ANON_API_QUOTA' => $st_anon_api_quota,
             'ST_PSEUDOR_ENDING' => $st_pseudor_ending,
-            'ST_ADV_ANALYTICS' => $st_adv_analytics,
+            'ST_ADV_ANALYTICS'  => $st_adv_analytics,
 
-            'TMP_SETUP_AUTH_KEY' => $setup_auth_key
+            'TMP_SETUP_AUTH_KEY' => $setup_auth_key,
         ])->render();
 
         $handle = fopen('../.env', 'w');
-        if (fwrite($handle, $compiled_configuration) === FALSE) {
+        if (fwrite($handle, $compiled_configuration) === false) {
             $response = view('error', [
-                'message' => 'Could not write configuration to disk.'
+                'message' => 'Could not write configuration to disk.',
             ]);
         } else {
             Cache::flush();
 
             $setup_finish_arguments = json_encode([
-                'acct_username' => $acct_username,
-                'acct_email' => $acct_email,
-                'acct_password' => $acct_password,
-                'setup_auth_key' => $setup_auth_key
+                'acct_username'  => $acct_username,
+                'acct_email'     => $acct_email,
+                'acct_password'  => $acct_password,
+                'setup_auth_key' => $setup_auth_key,
             ]);
 
             $response = redirect(route('setup_finish'));
@@ -206,15 +212,16 @@ class SetupController extends Controller {
             // set cookie with information needed for finishSetup, expire in 60 seconds
             // we use PHP's setcookie rather than Laravel's cookie capabilities because
             // our app key changes and Laravel encrypts cookies.
-            setcookie('setup_arguments', $setup_finish_arguments, time()+60);
+            setcookie('setup_arguments', $setup_finish_arguments, time() + 60);
         }
 
         fclose($handle);
-        return $response;
 
+        return $response;
     }
 
-    public static function finishSetup(Request $request) {
+    public static function finishSetup(Request $request)
+    {
         // get data from cookie, decode JSON
         if (!isset($_COOKIE['setup_arguments'])) {
             abort(404);
@@ -224,7 +231,7 @@ class SetupController extends Controller {
         $setup_finish_args = json_decode($setup_finish_args_raw);
 
         // unset cookie
-        setcookie('setup_arguments', '', time()-3600);
+        setcookie('setup_arguments', '', time() - 3600);
 
         $transaction_authorised = env('TMP_SETUP_AUTH_KEY') == $setup_finish_args->setup_auth_key;
 

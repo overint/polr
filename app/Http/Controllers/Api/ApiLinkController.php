@@ -1,22 +1,25 @@
 <?php
-namespace App\Http\Controllers\Api;
-use Illuminate\Http\Request;
 
+namespace App\Http\Controllers\Api;
+
+use App\Exceptions\Api\ApiException;
 use App\Factories\LinkFactory;
 use App\Helpers\LinkHelper;
-use App\Exceptions\Api\ApiException;
+use Illuminate\Http\Request;
 
-class ApiLinkController extends ApiController {
-    public function shortenLink(Request $request) {
+class ApiLinkController extends ApiController
+{
+    public function shortenLink(Request $request)
+    {
         $response_type = $request->input('response_type');
         $user = $request->user;
 
         // Validate parameters
         // Encode spaces as %20 to avoid validator conflicts
         $validator = \Validator::make(array_merge([
-            'url' => str_replace(' ', '%20', $request->input('url'))
+            'url' => str_replace(' ', '%20', $request->input('url')),
         ], $request->except('url')), [
-            'url' => 'required|url'
+            'url' => 'required|url',
         ]);
 
         if ($validator->fails()) {
@@ -31,21 +34,21 @@ class ApiLinkController extends ApiController {
 
         try {
             $formatted_link = LinkFactory::createLink($long_url, $is_secret, $custom_ending, $link_ip, $user->username, false, true);
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             throw new ApiException('CREATION_ERROR', $e->getMessage(), 400, $response_type);
         }
 
         return self::encodeResponse($formatted_link, 'shorten', $response_type);
     }
 
-    public function lookupLink(Request $request) {
+    public function lookupLink(Request $request)
+    {
         $user = $request->user;
         $response_type = $request->input('response_type');
 
         // Validate URL form data
         $validator = \Validator::make($request->all(), [
-            'url_ending' => 'required|alpha_dash'
+            'url_ending' => 'required|alpha_dash',
         ]);
 
         if ($validator->fails()) {
@@ -67,14 +70,13 @@ class ApiLinkController extends ApiController {
 
         if ($link) {
             return self::encodeResponse([
-                'long_url' => $link['long_url'],
+                'long_url'   => $link['long_url'],
                 'created_at' => $link['created_at'],
-                'clicks' => $link['clicks'],
+                'clicks'     => $link['clicks'],
                 'updated_at' => $link['updated_at'],
-                'created_at' => $link['created_at']
+                'created_at' => $link['created_at'],
             ], 'lookup', $response_type, $link['long_url']);
-        }
-        else {
+        } else {
             throw new ApiException('NOT_FOUND', 'Link not found.', 404, $response_type);
         }
     }
